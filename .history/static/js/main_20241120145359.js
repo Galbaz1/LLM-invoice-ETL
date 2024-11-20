@@ -108,38 +108,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const filteredValue = filterEmptyValues(value);
                     if (!isEmptyValue(filteredValue)) {
                         filtered[key] = filteredValue;
-                    }
+                if (value != null && value !== '' && 
+                    !(Array.isArray(value) && value.length === 0) &&
+                    !(typeof value === 'object' && Object.keys(value).length === 0)) {
+                    filtered[key] = filterEmptyValues(value);
                 }
             });
             return filtered;
         }
         
         return obj;
-    }
-
-    function isEmptyValue(value) {
-        // Check for null, undefined, empty string
-        if (value == null || value === '') return true;
-        
-        // Check for zero values in different formats
-        if (typeof value === 'number' || typeof value === 'string') {
-            const numValue = Number(value);
-            if (!isNaN(numValue) && numValue === 0) return true;
-        }
-        
-        // Check for "0.00" and similar string formats
-        if (typeof value === 'string' && /^0*\.?0*$/.test(value)) return true;
-        
-        // Check for "none" or "None" in different cases
-        if (typeof value === 'string' && value.toLowerCase() === 'none') return true;
-        
-        // Check for empty arrays
-        if (Array.isArray(value) && value.length === 0) return true;
-        
-        // Check for empty objects
-        if (typeof value === 'object' && Object.keys(value).length === 0) return true;
-        
-        return false;
     }
 
     function convertToMarkdown(data) {

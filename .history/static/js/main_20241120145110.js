@@ -95,51 +95,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(obj)) {
             return obj.map(filterEmptyValues).filter(item => {
                 if (typeof item === 'object') {
-                    return Object.keys(filterEmptyValues(item)).length > 0;
+                    return Object.keys(item).length > 0;
                 }
-                return !isEmptyValue(item);
+                return item != null;
             });
         }
         
         if (obj && typeof obj === 'object') {
             const filtered = {};
             Object.entries(obj).forEach(([key, value]) => {
-                if (!isEmptyValue(value)) {
-                    const filteredValue = filterEmptyValues(value);
-                    if (!isEmptyValue(filteredValue)) {
-                        filtered[key] = filteredValue;
-                    }
+                if (value != null && value !== '' && 
+                    !(Array.isArray(value) && value.length === 0) &&
+                    !(typeof value === 'object' && Object.keys(value).length === 0)) {
+                    filtered[key] = filterEmptyValues(value);
                 }
             });
             return filtered;
         }
         
         return obj;
-    }
-
-    function isEmptyValue(value) {
-        // Check for null, undefined, empty string
-        if (value == null || value === '') return true;
-        
-        // Check for zero values in different formats
-        if (typeof value === 'number' || typeof value === 'string') {
-            const numValue = Number(value);
-            if (!isNaN(numValue) && numValue === 0) return true;
-        }
-        
-        // Check for "0.00" and similar string formats
-        if (typeof value === 'string' && /^0*\.?0*$/.test(value)) return true;
-        
-        // Check for "none" or "None" in different cases
-        if (typeof value === 'string' && value.toLowerCase() === 'none') return true;
-        
-        // Check for empty arrays
-        if (Array.isArray(value) && value.length === 0) return true;
-        
-        // Check for empty objects
-        if (typeof value === 'object' && Object.keys(value).length === 0) return true;
-        
-        return false;
     }
 
     function convertToMarkdown(data) {
@@ -253,6 +227,78 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Initialize copy buttons after content is loaded
         initializeCopyButtons();
+    }
+
+    function convertToMarkdown(data) {
+        let markdown = `# Receipt Details\n\n`;
+        
+        // Handle error handling section
+        if (data.error_handling) {
+            markdown += `## Error Handling\n`;
+            markdown += `- Error Status: ${data.error_handling.has_errors ? 'Has Errors' : 'No Errors'}\n`;
+            if (data.error_handling.errors && data.error_handling.errors.length > 0) {
+                markdown += `- Errors Found:\n`;
+                data.error_handling.errors.forEach(error => {
+                    markdown += `  - ID: ${error.id}\n`;
+                    markdown += `  - Message: ${error.message}\n`;
+                    markdown += `  - Analysis: ${error.analysis}\n`;
+                });
+            }
+            markdown += '\n';
+        }
+
+        // Handle basic invoice details
+        markdown += `## Invoice Details\n`;
+        if (data.invoice_date) markdown += `- Date: ${data.invoice_date}\n`;
+        if (data.invoice_number) markdown += `- Invoice Number: ${data.invoice_number}\n`;
+        if (data.currency) markdown += `- Currency: ${data.currency}\n`;
+        if (data.amount_payable) markdown += `- Amount Payable: ${data.currency} ${data.amount_payable}\n`;
+        markdown += '\n';
+
+        // Handle suppliers section
+        if (data.suppliers && data.suppliers.length > 0) {
+            markdown += `## Suppliers\n`;
+            data.suppliers.forEach((supplier, index) => {
+                markdown += `### ${supplier.supplier}\n`;
+                if (supplier.observation) markdown += `${supplier.observation}\n\n`;
+                if (supplier.high_tax_base) markdown += `- High Tax Base: ${data.currency} ${supplier.high_tax_base}\n`;
+                if (supplier.high_tax) markdown += `- High Tax Amount: ${data.currency} ${supplier.high_tax}\n`;
+                if (supplier.low_tax_base) markdown += `- Low Tax Base: ${data.currency} ${supplier.low_tax_base}\n`;
+                if (supplier.low_tax) markdown += `- Low Tax Amount: ${data.currency} ${supplier.low_tax}\n`;
+                if (supplier.null_tax_base) markdown += `- Null Tax Base: ${data.currency} ${supplier.null_tax_base}\n`;
+                markdown += '\n';
+            });
+        }
+
+        // Handle supplier details
+        if (data.details_supplier) {
+            markdown += `## Supplier Details\n`;
+            const details = data.details_supplier;
+            if (details.email) markdown += `- Email: ${details.email}\n`;
+            if (details.address) markdown += `- Address: ${details.address}\n`;
+            if (details.iban) markdown += `- IBAN: ${details.iban}\n`;
+            if (details.vat_id) markdown += `- VAT ID: ${details.vat_id}\n`;
+            if (details.kvk) markdown += `- KVK: ${details.kvk}\n`;
+            markdown += '\n';
+        }
+
+        // Handle financial details
+        markdown += `## Financial Summary\n`;
+        if (data.amount_excl_tax) markdown += `- Amount Excluding Tax: ${data.currency} ${data.amount_excl_tax}\n`;
+        if (data.high_tax_base) markdown += `- High Tax Base (21%): ${data.currency} ${data.high_tax_base}\n`;
+        if (data.high_tax) markdown += `- High Tax Amount: ${data.currency} ${data.high_tax}\n`;
+        if (data.low_tax_base) markdown += `- Low Tax Base (9%): ${data.currency} ${data.low_tax_base}\n`;
+        if (data.low_tax) markdown += `- Low Tax Amount: ${data.currency} ${data.low_tax}\n`;
+        if (data.total_emballage) markdown += `- Total Emballage: ${data.currency} ${data.total_emballage}\n`;
+        markdown += '\n';
+
+        // Handle payment details
+        markdown += `## Payment Information\n`;
+        if (data.recipient) markdown += `- Recipient: ${data.recipient}\n`;
+        if (data.method_of_payment) markdown += `- Payment Method: ${data.method_of_payment}\n`;
+        if (data.amount_payable_citation) markdown += `- Amount Payable Citation: \`${data.amount_payable_citation}\`\n`;
+
+        return markdown;
     }
 
     function initializeCopyButtons() {

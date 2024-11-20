@@ -95,51 +95,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Array.isArray(obj)) {
             return obj.map(filterEmptyValues).filter(item => {
                 if (typeof item === 'object') {
-                    return Object.keys(filterEmptyValues(item)).length > 0;
+                    return Object.keys(item).length > 0;
                 }
-                return !isEmptyValue(item);
+                return item != null;
             });
         }
         
         if (obj && typeof obj === 'object') {
             const filtered = {};
             Object.entries(obj).forEach(([key, value]) => {
-                if (!isEmptyValue(value)) {
-                    const filteredValue = filterEmptyValues(value);
-                    if (!isEmptyValue(filteredValue)) {
-                        filtered[key] = filteredValue;
-                    }
+                if (value != null && value !== '' && 
+                    !(Array.isArray(value) && value.length === 0) &&
+                    !(typeof value === 'object' && Object.keys(value).length === 0)) {
+                    filtered[key] = filterEmptyValues(value);
                 }
             });
             return filtered;
         }
         
         return obj;
-    }
-
-    function isEmptyValue(value) {
-        // Check for null, undefined, empty string
-        if (value == null || value === '') return true;
-        
-        // Check for zero values in different formats
-        if (typeof value === 'number' || typeof value === 'string') {
-            const numValue = Number(value);
-            if (!isNaN(numValue) && numValue === 0) return true;
-        }
-        
-        // Check for "0.00" and similar string formats
-        if (typeof value === 'string' && /^0*\.?0*$/.test(value)) return true;
-        
-        // Check for "none" or "None" in different cases
-        if (typeof value === 'string' && value.toLowerCase() === 'none') return true;
-        
-        // Check for empty arrays
-        if (Array.isArray(value) && value.length === 0) return true;
-        
-        // Check for empty objects
-        if (typeof value === 'object' && Object.keys(value).length === 0) return true;
-        
-        return false;
     }
 
     function convertToMarkdown(data) {
@@ -167,31 +141,32 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Object.keys(filteredData).some(key => ['invoice_date', 'invoice_number', 'currency', 'amount_payable'].includes(key))) {
             markdown += `## Invoice Details\n`;
             if (filteredData.invoice_date) markdown += `- Date: ${filteredData.invoice_date}\n`;
-            if (filteredData.invoice_number) markdown += `- Invoice Number: ${filteredData.invoice_number}\n`;
-            if (filteredData.currency) markdown += `- Currency: ${filteredData.currency}\n`;
-            if (filteredData.amount_payable) markdown += `- Amount Payable: ${filteredData.currency} ${filteredData.amount_payable}\n`;
-            markdown += '\n';
-        }
+        markdown += `## Invoice Details\n`;
+        if (data.invoice_date) markdown += `- Date: ${data.invoice_date}\n`;
+        if (data.invoice_number) markdown += `- Invoice Number: ${data.invoice_number}\n`;
+        if (data.currency) markdown += `- Currency: ${data.currency}\n`;
+        if (data.amount_payable) markdown += `- Amount Payable: ${data.currency} ${data.amount_payable}\n`;
+        markdown += '\n';
 
         // Handle suppliers section
-        if (filteredData.suppliers && filteredData.suppliers.length > 0) {
+        if (data.suppliers && data.suppliers.length > 0) {
             markdown += `## Suppliers\n`;
-            filteredData.suppliers.forEach((supplier, index) => {
+            data.suppliers.forEach((supplier, index) => {
                 markdown += `### ${supplier.supplier}\n`;
                 if (supplier.observation) markdown += `${supplier.observation}\n\n`;
-                if (supplier.high_tax_base) markdown += `- High Tax Base: ${filteredData.currency} ${supplier.high_tax_base}\n`;
-                if (supplier.high_tax) markdown += `- High Tax Amount: ${filteredData.currency} ${supplier.high_tax}\n`;
-                if (supplier.low_tax_base) markdown += `- Low Tax Base: ${filteredData.currency} ${supplier.low_tax_base}\n`;
-                if (supplier.low_tax) markdown += `- Low Tax Amount: ${filteredData.currency} ${supplier.low_tax}\n`;
-                if (supplier.null_tax_base) markdown += `- Null Tax Base: ${filteredData.currency} ${supplier.null_tax_base}\n`;
+                if (supplier.high_tax_base) markdown += `- High Tax Base: ${data.currency} ${supplier.high_tax_base}\n`;
+                if (supplier.high_tax) markdown += `- High Tax Amount: ${data.currency} ${supplier.high_tax}\n`;
+                if (supplier.low_tax_base) markdown += `- Low Tax Base: ${data.currency} ${supplier.low_tax_base}\n`;
+                if (supplier.low_tax) markdown += `- Low Tax Amount: ${data.currency} ${supplier.low_tax}\n`;
+                if (supplier.null_tax_base) markdown += `- Null Tax Base: ${data.currency} ${supplier.null_tax_base}\n`;
                 markdown += '\n';
             });
         }
 
         // Handle supplier details
-        if (filteredData.details_supplier) {
+        if (data.details_supplier) {
             markdown += `## Supplier Details\n`;
-            const details = filteredData.details_supplier;
+            const details = data.details_supplier;
             if (details.email) markdown += `- Email: ${details.email}\n`;
             if (details.address) markdown += `- Address: ${details.address}\n`;
             if (details.iban) markdown += `- IBAN: ${details.iban}\n`;
@@ -202,57 +177,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Handle financial details
         markdown += `## Financial Summary\n`;
-        if (filteredData.amount_excl_tax) markdown += `- Amount Excluding Tax: ${filteredData.currency} ${filteredData.amount_excl_tax}\n`;
-        if (filteredData.high_tax_base) markdown += `- High Tax Base (21%): ${filteredData.currency} ${filteredData.high_tax_base}\n`;
-        if (filteredData.high_tax) markdown += `- High Tax Amount: ${filteredData.currency} ${filteredData.high_tax}\n`;
-        if (filteredData.low_tax_base) markdown += `- Low Tax Base (9%): ${filteredData.currency} ${filteredData.low_tax_base}\n`;
-        if (filteredData.low_tax) markdown += `- Low Tax Amount: ${filteredData.currency} ${filteredData.low_tax}\n`;
-        if (filteredData.total_emballage) markdown += `- Total Emballage: ${filteredData.currency} ${filteredData.total_emballage}\n`;
+        if (data.amount_excl_tax) markdown += `- Amount Excluding Tax: ${data.currency} ${data.amount_excl_tax}\n`;
+        if (data.high_tax_base) markdown += `- High Tax Base (21%): ${data.currency} ${data.high_tax_base}\n`;
+        if (data.high_tax) markdown += `- High Tax Amount: ${data.currency} ${data.high_tax}\n`;
+        if (data.low_tax_base) markdown += `- Low Tax Base (9%): ${data.currency} ${data.low_tax_base}\n`;
+        if (data.low_tax) markdown += `- Low Tax Amount: ${data.currency} ${data.low_tax}\n`;
+        if (data.total_emballage) markdown += `- Total Emballage: ${data.currency} ${data.total_emballage}\n`;
         markdown += '\n';
 
         // Handle payment details
         markdown += `## Payment Information\n`;
-        if (filteredData.recipient) markdown += `- Recipient: ${filteredData.recipient}\n`;
-        if (filteredData.method_of_payment) markdown += `- Payment Method: ${filteredData.method_of_payment}\n`;
-        if (filteredData.amount_payable_citation) markdown += `- Amount Payable Citation: \`${filteredData.amount_payable_citation}\`\n`;
+        if (data.recipient) markdown += `- Recipient: ${data.recipient}\n`;
+        if (data.method_of_payment) markdown += `- Payment Method: ${data.method_of_payment}\n`;
+        if (data.amount_payable_citation) markdown += `- Amount Payable Citation: \`${data.amount_payable_citation}\`\n`;
 
         return markdown;
-    }
-
-    async function displayResults(data) {
-        const filteredData = filterEmptyValues(data);
-        
-        // Position upload container to the left
-        const uploadContainer = document.querySelector('.upload-container');
-        uploadContainer.classList.add('positioned');
-        
-        // Convert JSON to markdown and then to HTML
-        const markdown = convertToMarkdown(filteredData);
-        const htmlContent = marked.parse(markdown); // Convert markdown to HTML
-        
-        // Update content
-        markdownContent.innerHTML = htmlContent;
-        jsonContent.textContent = JSON.stringify(filteredData, null, 2);
-
-        // Show results container with animation
-        results.classList.remove('hidden');
-        
-        // Add visible class to results container
-        await new Promise(resolve => setTimeout(resolve, 100));
-        results.classList.add('visible');
-        
-        // Add visible class to individual sections with staggered delay
-        const markdownSection = document.querySelector('.markdown-section');
-        const jsonSection = document.querySelector('.json-section');
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-        markdownSection.classList.add('visible');
-        
-        await new Promise(resolve => setTimeout(resolve, 300));
-        jsonSection.classList.add('visible');
-
-        // Initialize copy buttons after content is loaded
-        initializeCopyButtons();
     }
 
     function initializeCopyButtons() {
