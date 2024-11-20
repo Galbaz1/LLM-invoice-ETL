@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Extractor</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="container">
+        <h1 class="title fade-in">Receipt Extractor</h1>
+        
+        <div class="content-wrapper">
+            <div class="upload-container fade-in-delayed">
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-content">
+                        <div class="preview-container hidden">
+                            <img id="imagePreview" src="" alt="Receipt preview">
+                        </div>
+                        <p>Drag & Drop your receipt here or</p>
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <button class="upload-btn">Choose File</button>
+                    </div>
+                    <div class="processing-indicator">
+                        <div class="processing-spinner"></div>
+                        <p>Processing your receipt...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results hidden">
+                <div class="result-section markdown-section">
+                    <h2>Markdown View</h2>
+                    <pre class="markdown-content"></pre>
+                    <div class="button-container">
+                        <div class="copy-btn">Copy</div>
+                        <button class="download-btn">Download MD</button>
+                    </div>
+                </div>
+
+                <div class="result-section json-section">
+                    <h2>JSON View</h2>
+                    <pre class="json-content"></pre>
+                    <div class="button-container">
+                        <div class="copy-btn">Copy</div>
+                        <button class="download-btn">Download JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html> 

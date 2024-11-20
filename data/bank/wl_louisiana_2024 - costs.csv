@@ -1,0 +1,1 @@
+date,payment_date,payment_method,doc_type,doc_id,amount_due,base_amount_ex_tax,low_tax,high_tax,issuer,recipient,main_cost_cat,sub_cost_cat,transaction_id

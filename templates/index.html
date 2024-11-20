@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/styles.css') }}">
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="container">
+        <h1 class="title">{{ title }}</h1>
+        
+        <div class="content-wrapper">
+            <div class="upload-container">
+                <div id="dropZone" class="upload-area">
+                    <div class="upload-content">
+                        <h2>Upload Invoice</h2>
+                        <p>Drag & drop your invoice text file here or click to select</p>
+                        <button class="upload-btn">Select File</button>
+                        <input type="file" id="fileInput" accept=".txt,text/plain" style="display: none;">
+                    </div>
+                    
+                    <div class="processing-indicator hidden">
+                        <div class="processing-spinner"></div>
+                        <p>Processing invoice...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results hidden">
+                <div class="result-section markdown-section">
+                    <h2>Markdown Output</h2>
+                    <pre class="markdown-content"></pre>
+                    <div class="button-container">
+                        <button class="copy-btn">Copy MD</button>
+                        <button class="download-btn">Download MD</button>
+                    </div>
+                </div>
+
+                <div class="result-section json-section">
+                    <h2>JSON Output</h2>
+                    <pre class="json-content"></pre>
+                    <div class="button-container">
+                        <button class="copy-btn">Copy JSON</button>
+                        <button class="download-btn">Download JSON</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', path='/js/main.js') }}"></script>
+</body>
+</html> 

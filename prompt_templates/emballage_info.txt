@@ -1,0 +1,28 @@
+### Packaging Costs
+
+#### Overview
+Packaging costs refer to a deposit system for reusable packaging (e.g., bottles, kegs, crates) used to encourage returns and recycling in the Netherlands.
+
+It's refered to as 'statiegeld' and applied to small packaging like cans, bottles. For B-to-B it's refered to as 'emballage' and applied to crates, pallets, beer kegs and such.
+
+#### Key Details
+
+1. **Deposit Charges**:
+
+   - **When Charged**: Added to the invoice when packaging is delivered.
+   - **When Refunded**: Credited when the packaging is returned.
+
+2. **Invoice Handling**:
+   - **Separate Listing**: Emballage charges are listed separately, labeled as 'statiegeld' or 'emballage'.
+   - **Impact on Total**: The sum can be positive (when charged) or negative (when refunded), affecting the total payable amount.
+   - **Not a Sales Transaction**: Emballage charges do not qualify as a sale and are not included in VAT calculations.
+
+3. **Tax Treatment**:
+   - **VAT**: Emballage charges are not subject to VAT (BTW). They are treated as VAT-exempt. Meaning neither count for 'null_tax_base', 'low_tax_base' or 'high_tax'
+
+#### Example
+- **Purchase**: A delivery from Heineken includes crates and kegs with a deposit. The invoice lists the item price and a separate emballage charge.
+- **Return**: Returning empty crates/kegs results in a credit note/refund for the emballage amount.
+
+
+#########

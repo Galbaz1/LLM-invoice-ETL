@@ -1,0 +1,38 @@
+
+
+sepay 
+veilig, gemakkelijk, overal betalen 
+
+Louisiana Lobstershack B.V. 
+T.a.v.Dhr. Albers 
+Zijlstraat 21 ZW 
+2011 TJ HAARLEM 
+
+Debiteurnummer 10108891                                                                             Periode juli 
+Factuurnummer 22068212 
+Factuur datum 4 juli 2023 
+Uw referentie Betaalautomaatkosten 
+Betaalconditie Incasso 
+
+Factuur 
+
+    Artikelnr                Omschrijving                 Aantal     Netto prijs     BTW   %       Totaal 
+NKN41AK         Abonnement ING SEPAY Mini 4G Koop 1 jaar         2           10,750         21       21,50 EUR 
+NTCA            Transactiekosten Amex juni (9 / € 352,91)        1           6,880          21        6,88 EUR 
+NTCM            Transactiekosten Mastercard juni (14 / €         1           15,330         21       15,33 EUR 
+                894,53) 
+NTCV            Transactiekosten Visa juni (9 / € 667,06)        1           10,630         21       10,63 EUR 
+
+                                                                              Bedrag excl. BTW :     54,34 EUR 
+                                                                                    Totaal BTW :     11,41 EUR 
+                                                                              Bedrag incl. BTW :     65,75 EUR 
+                                                                            Reeds ingehouden :      -32,84 EUR 
+                                                                               Totaal te betalen :   32,91 EUR 
+
+Het verschuldigde bedrag wordt binnen enkele dagen automatisch van uw rekening (NL85INGB0006814971) afgeschreven. 
+
+SEPAY B.V.                                Tel: 088 - 426 2700                        Incassant ID: NL56ZZZ321022760000 
+Dr. Kuyperstraat 14                       Email: factuur@sepay.nl 
+2514BB 's-Gravenhage                      Kvk: 32102276                              IBAN: NL42INGB0674518543 
+www.sepay.nl                              BTW: NL813351327B01                        BIC: INGBNL2A 
+<<<

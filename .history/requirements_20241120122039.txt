@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-multipart
+openai
+termcolor
+jinja2 
+insgtructor
