@@ -1,0 +1,98 @@
+fancy-receipt-extractor/
+├── src/
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── routes.py          # FastAPI route handlers
+│   │   └── dependencies.py    # FastAPI dependencies
+│   │
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py         # Configuration settings
+│   │   └── constants.py      # System-wide constants
+│   │
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── pydantic/        # Pydantic models & validators
+│   │   │   ├── __init__.py
+│   │   │   ├── receipt.py   # Receipt-related models
+│   │   │   └── validators.py # Custom validators
+│   │   └── database/        # If DB models needed in future
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── openai_service.py # OpenAI/GPT-4o integration
+│   │   └── extraction_service.py # Receipt extraction logic
+│   │
+│   └── utils/
+│       ├── __init__.py
+│       └── helpers.py        # Utility functions
+│
+├── static/                   # Static assets (CSS, JS, images)
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+├── templates/                # Jinja2 templates
+│   └── index.html
+│
+├── prompt_templates/         # OpenAI prompt templates
+│   ├── user_info.txt
+│   └── emballage_info.txt
+│
+├── data/                     # Data storage if needed
+│
+├── tests/                    # Test suite
+│   ├── __init__.py
+│   ├── test_api/
+│   ├── test_models/
+│   └── test_services/
+│
+├── main.py                   # Application entry point
+├── requirements.txt          # Project dependencies
+└── README.md                # Project documentation
+
+
+######
+
+# Key Components and Their Responsibilities
+
+## API Layer (`src/api/`)
+- Routes and endpoint handlers
+- Request/response handling 
+- Input validation
+
+## Core (`src/core/`)
+- Configuration management
+- System constants
+- Environment variables
+
+## Models (`src/models/`)
+- Pydantic models for data validation
+- Custom validators
+- Data structures
+
+## Services (`src/services/`)
+- Business logic
+- OpenAI integration
+- Receipt extraction logic
+
+## Utils (`src/utils/`)
+- Helper functions
+- Common utilities
+- Shared functionality
+
+## Static & Templates
+- Frontend assets
+- HTML templates
+- CSS/JS resources
+
+## Prompt Templates
+- Organized storage for GPT prompts
+- Separation of AI interaction templates
+
+## Architecture Principles
+- Clear separation of concerns
+- Modular and maintainable code
+- Easy to test components
+- Scalable architecture
+- Clean dependency management

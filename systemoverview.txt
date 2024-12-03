@@ -1,0 +1,116 @@
+# Receipt and Invoice Information Extraction System
+
+## Overview
+This application provides a modern web interface for extracting structured information from receipts and invoices using OpenAI's GPT-4o model and the Instructor Library, with robust data validation through Pydantic V2.
+
+## System Architecture
+
+### 1. Frontend Components
+- Modern web interface with drag-and-drop file upload
+- Animated processing indicators
+- Dynamic results display with markdown formatting
+- Error handling and user feedback
+- Supports .txt file uploads only
+
+### 2. Backend Components
+- FastAPI server with async support
+- OpenAI GPT-4o integration with Instructor Library
+- Pydantic models for data validation
+- LangSmith integration for tracing and monitoring
+
+### 3. Core Features
+
+#### Data Extraction
+- Processes text-based invoices and receipts
+- Extracts key financial information including:
+  - Invoice details (number, dates, amounts)
+  - Supplier information
+  - Tax calculations
+  - Payment details
+  - Emballage/packaging costs
+
+#### Validation System
+- Comprehensive Pydantic validation
+- Field-level validators for:
+  - Dutch VAT IDs
+  - IBAN numbers
+  - Date formats
+  - Currency amounts
+  - Tax calculations
+- Error handling with detailed feedback
+
+#### Business Logic
+- Dutch tax law compliance
+- Special handling for emballage/statiegeld
+- Supplier normalization
+- Tax rate validation (9%, 21%, 0%)
+- Multi-supplier support
+
+### 4. Key Classes
+
+#### InvoiceDetail
+- Main model for invoice data
+- Handles complete invoice structure
+- Includes error handling capabilities
+
+#### SupplierFinancialDetails
+- Manages supplier-specific financial information
+- Validates tax calculations
+- Handles different tax rates
+
+#### SupplierDetails
+- Captures business information
+- Validates VAT IDs and IBANs
+- Normalizes company names
+
+#### ErrorHandling
+- Structured error capture
+- Detailed error analysis
+- User-friendly error messages
+
+### 5. Integration Points
+- OpenAI API for GPT-4o model
+- LangSmith for tracing
+- Frontend-Backend communication via REST API
+- File system for text file processing
+
+### 6. Security Features
+- Input validation
+- Error handling
+- Secure file processing
+- API key management through environment variables
+
+### 7. Performance Considerations
+- Async processing
+- Concurrent request handling with semaphore
+- Efficient file handling
+- Response caching where appropriate
+
+## Usage Flow
+1. User uploads text file through web interface
+2. Backend validates file format
+3. Text is processed by GPT-4o model
+4. Data is validated through Pydantic models
+5. Results are formatted and returned to frontend
+6. Frontend displays structured results with animations
+
+## Error Handling
+- Comprehensive error catching
+- Detailed error messages
+- User-friendly error display
+- Validation feedback
+- Retry mechanisms
+
+## Configuration
+- Environment variables for API keys
+- Configurable model parameters
+- Adjustable validation rules
+- Customizable error messages
+
+## Dependencies
+- FastAPI
+- Pydantic V2
+- OpenAI
+- Instructor
+- LangSmith
+- Additional Python packages (see requirements.txt)

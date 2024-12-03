@@ -1,0 +1,99 @@
+Fancy Receipt Extractor - System Overview
+=====================================
+
+Project Structure
+----------------
+```
+fancy_receipt_extractor/
+├── app/
+│   ├── __init__.py
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── config.py          # Configuration settings and environment variables
+│   │   ├── constants.py       # System-wide constants and variables
+│   │   └── logger.py          # Logging configuration
+│   │
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── receipt.py         # Pydantic models for receipt data
+│   │   └── validators.py      # Custom validators for data validation
+│   │
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── extractor.py       # Receipt information extraction logic
+│   │   └── openai_client.py   # OpenAI API integration
+│   │
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py          # API endpoints
+│   │
+│   ├── static/
+│   │   ├── css/              # Stylesheets
+│   │   ├── js/               # JavaScript files
+│   │   └── images/           # Image assets
+│   │
+│   └── templates/            # HTML templates
+│
+├── tests/                    # Test files
+│   ├── __init__.py
+│   ├── test_models.py
+│   └── test_services.py
+│
+├── main.py                   # Application entry point
+├── requirements.txt          # Project dependencies
+└── README.md                # Project documentation
+
+Key Components
+-------------
+1. Core Components:
+   - Configuration management
+   - System-wide constants
+   - Logging system
+
+2. Models:
+   - Pydantic models for data validation
+   - Custom validators
+   - Type annotations and field validations
+
+3. Services:
+   - Receipt information extraction
+   - OpenAI API integration
+   - Data processing logic
+
+4. API:
+   - RESTful endpoints
+   - Request/Response handling
+
+5. Frontend:
+   - Animated web interface
+   - Modern UI components
+   - Interactive features
+
+Data Flow
+---------
+1. User uploads receipt → Frontend
+2. Frontend sends to API endpoint
+3. API routes to extraction service
+4. Extraction service:
+   - Processes image
+   - Calls OpenAI GPT-4o
+   - Validates with Pydantic
+5. Validated data returned to frontend
+6. Frontend displays results with animations
+
+Technology Stack
+--------------
+- Backend: Python
+- Frontend: HTML, CSS, JavaScript
+- Validation: Pydantic V2
+- AI: OpenAI GPT-4o
+- Data Extraction: Instructor Library
+- API Framework: FastAPI/Flask
+
+Security Considerations
+---------------------
+- API keys stored in system environment variables
+- Input validation using Pydantic
+- Error handling with try-except blocks
+- Secure file handling with proper encoding
+- Logging for debugging and monitoring
