@@ -7,24 +7,21 @@ This application provides a modern web interface for extracting structured infor
 
 ### 1. Frontend Components
 - Modern web interface with drag-and-drop file upload
-- PDF preview with multi-page navigation
 - Animated processing indicators
 - Dynamic results display with markdown formatting
 - Error handling and user feedback
-- Supports PDF file uploads
+- Supports .txt file uploads only
 
 ### 2. Backend Components
 - FastAPI server with async support
 - OpenAI GPT-4o integration with Instructor Library
 - Pydantic models for data validation
 - LangSmith integration for tracing and monitoring
-- SQLite database for result storage
-- LLMWhisperer for PDF processing
 
 ### 3. Core Features
 
 #### Data Extraction
-- Processes PDF invoices and receipts
+- Processes text-based invoices and receipts
 - Extracts key financial information including:
   - Invoice details (number, dates, amounts)
   - Supplier information
@@ -73,11 +70,9 @@ This application provides a modern web interface for extracting structured infor
 
 ### 5. Integration Points
 - OpenAI API for GPT-4o model
-- LLMWhisperer API for PDF processing
 - LangSmith for tracing
 - Frontend-Backend communication via REST API
-- SQLite database for storage
-- File system for PDF processing
+- File system for text file processing
 
 ### 6. Security Features
 - Input validation
@@ -92,15 +87,12 @@ This application provides a modern web interface for extracting structured infor
 - Response caching where appropriate
 
 ## Usage Flow
-1. User uploads PDF file through web interface
-2. PDF preview is displayed
-3. Backend validates file format and size
-4. PDF is processed by LLMWhisperer
-5. Extracted text is processed by GPT-4o model
-6. Data is validated through Pydantic models
-7. Results are stored in SQLite database
-8. Results are formatted and returned to frontend
-9. Frontend displays structured results with animations
+1. User uploads text file through web interface
+2. Backend validates file format
+3. Text is processed by GPT-4o model
+4. Data is validated through Pydantic models
+5. Results are formatted and returned to frontend
+6. Frontend displays structured results with animations
 
 ## Error Handling
 - Comprehensive error catching
@@ -121,6 +113,4 @@ This application provides a modern web interface for extracting structured infor
 - OpenAI
 - Instructor
 - LangSmith
-- LLMWhisperer
-- SQLite
 - Additional Python packages (see requirements.txt)

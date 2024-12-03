@@ -130,53 +130,36 @@ class SupplierDetails(BaseModel):
         
         # Country-specific validation patterns
         vat_patterns = {
-            'NL': r'^NL[0-9]{9}B[0-9]{2}$',  # Netherlands - basic format
-            'BE': r'^BE[0-1][0-9]{9}$',    # Belgium
-            'DE': r'^DE[0-9]{9}$',         # Germany
-            'FR': r'^FR[A-Z0-9]{2}[0-9]{9}$',  # France
-            'GB': r'^GB(?:[0-9]{9}|[0-9]{12}|(?:GD|HA)[0-9]{3})$',  # UK
-            'IT': r'^IT[0-9]{11}$',        # Italy
-            'ES': r'^ES[A-Z0-9][0-9]{7}[A-Z0-9]$',  # Spain
-            'AT': r'^ATU[0-9]{8}$',        # Austria
-            'PL': r'^PL[0-9]{10}$',        # Poland
-            'PT': r'^PT[0-9]{9}$',         # Portugal
-            'DK': r'^DK[0-9]{8}$',         # Denmark
-            'FI': r'^FI[0-9]{8}$',         # Finland
-            'HU': r'^HU[0-9]{8}$',         # Hungary
-            'LU': r'^LU[0-9]{8}$',         # Luxembourg
-            'IE': r'^IE[0-9]{7}[A-Z]{1,2}$',  # Ireland
+            'NL': r'^NL\d{9}B\d{2}$',  # Netherlands
+            'BE': r'^BE[0-1]\d{9}$',    # Belgium
+            'DE': r'^DE\d{9}$',         # Germany
+            'FR': r'^FR[A-Z0-9]{2}\d{9}$',  # France
+            'GB': r'^GB(\d{9}|\d{12}|(HA|GD)\d{3})$',  # UK
+            'IT': r'^IT\d{11}$',        # Italy
+            'ES': r'^ES[A-Z0-9]\d{7}[A-Z0-9]$',  # Spain
+            'AT': r'^ATU\d{8}$',        # Austria
+            'PL': r'^PL\d{10}$',        # Poland
+            'PT': r'^PT\d{9}$',         # Portugal
+            'DK': r'^DK\d{8}$',         # Denmark
+            'FI': r'^FI\d{8}$',         # Finland
+            'HU': r'^HU\d{8}$',         # Hungary
+            'LU': r'^LU\d{8}$',         # Luxembourg
+            'IE': r'^IE\d{7}[A-Z]{1,2}$',  # Ireland
         }
         
-        # Remove any dots from the VAT number
-        v_clean = v.replace('.', '')
-        country_code = v_clean[:2]
-        
+        country_code = v[:2]
         if country_code in vat_patterns:
             pattern = vat_patterns[country_code]
-            if not re.match(pattern, v_clean):
-                # For Dutch VAT numbers, provide more specific feedback
-                if country_code == 'NL':
-                    raise ValueError(f'#####ValueError#####\n'
-                        f"value_error_id: 'invalid_dutch_vat_id'\n"
-                        f"The VAT ID '{v}' is not in the correct format. For Dutch VAT IDs:\n"
-                        f"- Must start with NL\n"
-                        f"- Followed by 9 digits\n"
-                        f"- Followed by B\n"
-                        f"- Ends with 2 digits\n"
-                        f"Example: NL123456789B01\n"
-                        f"#####END_VALUE_ERROR_MESSAGE#####\n"
-                        f"ValueError (ID) was raised, you must set 'flag_value_error' to TRUE and provide the exact error message, and an analysis of the error."
-                    )
-                else:
-                    raise ValueError(f'#####ValueError#####\n'
-                        f"value_error_id: 'invalid_{country_code.lower()}_vat_id'\n"
-                        f"The VAT ID '{v}' is not a valid {country_code} VAT ID.\n"
-                        f"#####END_VALUE_ERROR_MESSAGE#####\n"
-                        f"ValueError (ID) was raised, you must set 'flag_value_error' to TRUE and provide the exact error message, and an analysis of the error."
-                    )
+            if not re.match(pattern, v):
+                raise ValueError(f'#####ValueError#####\n'
+                    f"value_error_id: 'invalid_{country_code.lower()}_vat_id'\n"
+                    f"The VAT ID '{v}' is not a valid {country_code} VAT ID.\n"
+                    f"#####END_VALUE_ERROR_MESSAGE#####\n"
+                    f"ValueError (ID) was raised, you must set 'flag_value_error' to TRUE and provide the exact error message, and an analysis of the error."
+                )
         else:
             # General VAT ID format check for other countries
-            if not re.match(r'^[A-Z]{2}[A-Z0-9]{2,12}$', v_clean):
+            if not re.match(r'^[A-Z]{2}[A-Z0-9]{2,12}$', v):
                 raise ValueError(f'#####ValueError#####\n'
                     f"value_error_id: 'invalid_vat_id_format'\n"
                     f"The VAT ID '{v}' does not appear to be in a valid format. VAT IDs typically start with two letters followed by numbers and/or letters.\n"
@@ -184,7 +167,6 @@ class SupplierDetails(BaseModel):
                     f"ValueError (ID) was raised, you must set 'flag_value_error' to TRUE and provide the exact error message, and an analysis of the error."
                 )
         
-        # Return the original format if validation passes
         return v
 
 class DiscountBase(BaseModel):
