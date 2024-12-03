@@ -167,23 +167,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             })
             .then(data => {
+                console.log('Received data:', data); // Debug log
+                
                 // Hide processing indicator
                 document.querySelector('.processing-indicator').classList.add('hidden');
                 document.querySelector('.upload-content').classList.remove('hidden');
 
+                // Convert the data to markdown format
+                const markdown = convertToMarkdown(data);
+                
                 // Show results
                 document.querySelector('.results').classList.remove('hidden');
-                
-                // Convert and display markdown with tables
-                const markdown = convertToMarkdown(data);
-                document.querySelector('.markdown-content').innerHTML = marked.parse(markdown, {
-                    gfm: true,
-                    breaks: true,
-                    tables: true
-                });
-
-                // Format and display JSON
-                document.querySelector('.json-content').textContent = formatJsonForDisplay(data);
+                document.querySelector('.markdown-content').innerHTML = marked.parse(markdown);
+                document.querySelector('.json-content').textContent = JSON.stringify(data, null, 2);
 
                 // Add visible class for animation
                 setTimeout(() => {
@@ -195,6 +191,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error:', error);
+                // Hide processing indicator and show error message
                 document.querySelector('.processing-indicator').classList.add('hidden');
                 document.querySelector('.upload-content').classList.remove('hidden');
                 alert('An error occurred while processing the file.');
@@ -204,118 +201,47 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function formatCurrency(amount, currency = 'EUR') {
-        if (!amount) return '';
-        const num = parseFloat(amount);
-        return `${currency} ${num.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
     function convertToMarkdown(data) {
         let markdown = `# Invoice Details\n\n`;
-        markdown += '<div class="details-grid">\n\n';
 
-        // Left Column: General and Supplier Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // General Information
-        markdown += `## General Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        markdown += `| Invoice Number | ${data.invoice_number} |\n`;
-        markdown += `| Date | ${data.invoice_date} |\n`;
-        if (data.due_date) markdown += `| Due Date | ${data.due_date} |\n`;
-        markdown += `| Amount Payable | ${formatCurrency(data.amount_payable)} |\n\n`;
+        // Add basic invoice information
+        if (data.invoice_number) markdown += `**Invoice Number:** ${data.invoice_number}\n`;
+        if (data.invoice_date) markdown += `**Date:** ${data.invoice_date}\n`;
+        if (data.amount_payable) markdown += `**Amount Payable:** ${data.currency || '€'} ${data.amount_payable}\n`;
+        markdown += '\n';
 
-        // Supplier Information
-        markdown += `## Supplier Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        markdown += `| Name | ${data.primary_supplier} |\n`;
+        // Add supplier information if available
         if (data.details_supplier) {
+            markdown += `## Supplier Details\n`;
             const supplier = data.details_supplier;
-            if (supplier.email) markdown += `| Email | \`${supplier.email}\` |\n`;
-            if (supplier.address) markdown += `| Address | ${supplier.address} |\n`;
-            if (supplier.iban) markdown += `| IBAN | \`${supplier.iban}\` |\n`;
-            if (supplier.vat_id) markdown += `| VAT ID | \`${supplier.vat_id}\` |\n`;
-            if (supplier.kvk) markdown += `| KVK | ${supplier.kvk} |\n`;
+            if (supplier.name) markdown += `**Name:** ${supplier.name}\n`;
+            if (supplier.address) markdown += `**Address:** ${supplier.address}\n`;
+            if (supplier.vat_id) markdown += `**VAT ID:** ${supplier.vat_id}\n`;
+            if (supplier.iban) markdown += `**IBAN:** ${supplier.iban}\n`;
+            markdown += '\n';
         }
-        markdown += '\n</div>\n\n';
 
-        // Right Column: Financial Details and Payment Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // Financial Details
-        markdown += `## Financial Details\n\n`;
-        markdown += `| Category | Amount |\n`;
-        markdown += `|----------|--------|\n`;
-        if (data.suppliers && data.suppliers.length > 0) {
-            const supplier = data.suppliers[0];  // Assuming first supplier
-            if (supplier.high_tax_base) markdown += `| High Tax Base (21%) | ${formatCurrency(supplier.high_tax_base)} |\n`;
-            if (supplier.high_tax) markdown += `| High Tax Amount | ${formatCurrency(supplier.high_tax)} |\n`;
-            if (supplier.low_tax_base) markdown += `| Low Tax Base (9%) | ${formatCurrency(supplier.low_tax_base)} |\n`;
-            if (supplier.low_tax) markdown += `| Low Tax Amount | ${formatCurrency(supplier.low_tax)} |\n`;
-            if (supplier.null_tax_base) markdown += `| Null Tax Base (0%) | ${formatCurrency(supplier.null_tax_base)} |\n`;
-            if (supplier.amount_excl_tax) markdown += `| Amount Excluding Tax | ${formatCurrency(supplier.amount_excl_tax)} |\n`;
-        }
-        if (data.total_emballage) markdown += `| Total Emballage | ${formatCurrency(data.total_emballage)} |\n`;
-        markdown += `| **Total Amount Payable** | **${formatCurrency(data.amount_payable)}** |\n\n`;
+        // Add financial details
+        markdown += `## Financial Details\n`;
+        if (data.amount_excl_tax) markdown += `**Amount Excluding Tax:** ${data.currency || '€'} ${data.amount_excl_tax}\n`;
+        if (data.high_tax_base) markdown += `**High Tax Base:** ${data.currency || '€'} ${data.high_tax_base}\n`;
+        if (data.high_tax) markdown += `**High Tax Amount:** ${data.currency || '€'} ${data.high_tax}\n`;
+        if (data.low_tax_base) markdown += `**Low Tax Base:** ${data.currency || '€'} ${data.low_tax_base}\n`;
+        if (data.low_tax) markdown += `**Low Tax Amount:** ${data.currency || '€'} ${data.low_tax}\n`;
+        markdown += '\n';
 
-        // Payment Information
-        markdown += `## Payment Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        if (data.method_of_payment) markdown += `| Payment Method | ${data.method_of_payment} |\n`;
-        if (data.recipient) markdown += `| Recipient | ${data.recipient} |\n`;
-        
-        markdown += '\n</div>\n\n';
-        markdown += '</div>\n\n';  // Close details-grid
-
-        // Error handling section if there are errors (full width, below the grid)
-        if (data.error_handling?.has_errors) {
-            markdown += `## ⚠️ Validation Errors\n\n`;
-            if (data.error_handling.errors?.length > 0) {
-                data.error_handling.errors.forEach(error => {
-                    markdown += `### Error ${error.id}\n`;
-                    markdown += `**Message:** ${error.message}\n\n`;
-                    markdown += `**Analysis:** ${error.analysis}\n\n`;
-                });
-            }
+        // Add line items if available
+        if (data.line_items && data.line_items.length > 0) {
+            markdown += `## Line Items\n\n`;
+            markdown += `| Description | Quantity | Price | Amount |\n`;
+            markdown += `|------------|----------|-------|--------|\n`;
+            data.line_items.forEach(item => {
+                markdown += `| ${item.description || ''} | ${item.quantity || ''} | ${item.price || ''} | ${item.amount || ''} |\n`;
+            });
+            markdown += '\n';
         }
 
         return markdown;
-    }
-
-    function formatJsonForDisplay(data) {
-        // Deep clone the data to avoid modifying the original
-        const formattedData = JSON.parse(JSON.stringify(data));
-        
-        // Format currency values
-        function formatCurrencyInObject(obj) {
-            for (let key in obj) {
-                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    formatCurrencyInObject(obj[key]);
-                } else if (
-                    typeof obj[key] === 'string' && 
-                    !isNaN(obj[key]) && 
-                    (
-                        key.includes('amount') ||
-                        key.includes('tax') ||
-                        key.includes('base') ||
-                        key.includes('emballage')
-                    )
-                ) {
-                    obj[key] = parseFloat(obj[key]).toLocaleString('nl-NL', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-            }
-        }
-        
-        formatCurrencyInObject(formattedData);
-        
-        // Return formatted JSON string with proper indentation
-        return JSON.stringify(formattedData, null, 2);
     }
 
     // Copy button functionality

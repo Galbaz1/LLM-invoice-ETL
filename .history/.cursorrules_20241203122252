@@ -1,4 +1,4 @@
-This application provides a proffesional, black background, glass effect, white container for the output, web interface for extracting information from receipts and invoices using OpenAI's GPT-4o model and the Instructor Library for structured extraction and data validation with Pydantic V2.
+This application provides a beautiful, animated web interface for extracting information from receipts and invoices using OpenAI's GPT-4o model and the Instructor Library for structured extraction and data validation with Pydantic V2.
 
 The app is finished up till this point. Do not try to create it as it is already here.
 
@@ -76,6 +76,4 @@ Further improvements.
 
 STEP-1:
 
-If the user uploads a pdf file we want to show a preview of that file to the right side of the screen. The preview is fully responsive and multipage can be navigated with proffesionally styled arrows at the bottom. The preview is located below the sleek drag and drop area that is centred at the top of the screen. Left of the preview is where the results will be rendered in a scrollable block. 
-
-
+Instead of only txt files, add pdf support. We will need to use an API to extract the text from the pdf named "LLMWhisperer

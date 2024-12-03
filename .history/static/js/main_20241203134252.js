@@ -212,12 +212,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function convertToMarkdown(data) {
         let markdown = `# Invoice Details\n\n`;
-        markdown += '<div class="details-grid">\n\n';
 
-        // Left Column: General and Supplier Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // General Information
+        // Basic invoice information
         markdown += `## General Information\n\n`;
         markdown += `| Field | Value |\n`;
         markdown += `|-------|-------|\n`;
@@ -226,7 +222,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.due_date) markdown += `| Due Date | ${data.due_date} |\n`;
         markdown += `| Amount Payable | ${formatCurrency(data.amount_payable)} |\n\n`;
 
-        // Supplier Information
+        // Error handling section if there are errors
+        if (data.error_handling?.has_errors) {
+            markdown += `## ⚠️ Validation Errors\n\n`;
+            if (data.error_handling.errors?.length > 0) {
+                data.error_handling.errors.forEach(error => {
+                    markdown += `### Error ${error.id}\n`;
+                    markdown += `**Message:** ${error.message}\n\n`;
+                    markdown += `**Analysis:** ${error.analysis}\n\n`;
+                });
+            }
+        }
+
+        // Supplier details
         markdown += `## Supplier Information\n\n`;
         markdown += `| Field | Value |\n`;
         markdown += `|-------|-------|\n`;
@@ -239,12 +247,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (supplier.vat_id) markdown += `| VAT ID | \`${supplier.vat_id}\` |\n`;
             if (supplier.kvk) markdown += `| KVK | ${supplier.kvk} |\n`;
         }
-        markdown += '\n</div>\n\n';
+        markdown += '\n';
 
-        // Right Column: Financial Details and Payment Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // Financial Details
+        // Financial details
         markdown += `## Financial Details\n\n`;
         markdown += `| Category | Amount |\n`;
         markdown += `|----------|--------|\n`;
@@ -260,27 +265,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.total_emballage) markdown += `| Total Emballage | ${formatCurrency(data.total_emballage)} |\n`;
         markdown += `| **Total Amount Payable** | **${formatCurrency(data.amount_payable)}** |\n\n`;
 
-        // Payment Information
+        // Payment details
         markdown += `## Payment Information\n\n`;
         markdown += `| Field | Value |\n`;
         markdown += `|-------|-------|\n`;
         if (data.method_of_payment) markdown += `| Payment Method | ${data.method_of_payment} |\n`;
         if (data.recipient) markdown += `| Recipient | ${data.recipient} |\n`;
-        
-        markdown += '\n</div>\n\n';
-        markdown += '</div>\n\n';  // Close details-grid
-
-        // Error handling section if there are errors (full width, below the grid)
-        if (data.error_handling?.has_errors) {
-            markdown += `## ⚠️ Validation Errors\n\n`;
-            if (data.error_handling.errors?.length > 0) {
-                data.error_handling.errors.forEach(error => {
-                    markdown += `### Error ${error.id}\n`;
-                    markdown += `**Message:** ${error.message}\n\n`;
-                    markdown += `**Analysis:** ${error.analysis}\n\n`;
-                });
-            }
-        }
 
         return markdown;
     }

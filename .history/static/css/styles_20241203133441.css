@@ -257,69 +257,6 @@ body {
     word-break: break-word;
 }
 
-/* Markdown Table Styling */
-.markdown-content table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 1rem 0;
-    font-size: 0.9rem;
-}
-
-.markdown-content th {
-    text-align: left;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.markdown-content td {
-    padding: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.markdown-content tr:hover td {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* Two Column Layout */
-.markdown-content .details-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin: 1rem 0;
-}
-
-.markdown-content .details-section {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 6px;
-    padding: 1rem;
-}
-
-.markdown-content .details-section h2 {
-    margin: 0 0 1rem 0;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
-}
-
-.markdown-content .details-section table {
-    margin: 0;
-}
-
-/* Responsive Grid */
-@media (max-width: 768px) {
-    .markdown-content .details-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-}
-
 /* Scrollbar Styling */
 .preview-container::-webkit-scrollbar,
 .results::-webkit-scrollbar,

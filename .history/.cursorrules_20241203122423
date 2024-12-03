@@ -1,0 +1,207 @@
+This application provides a beautiful, animated web interface for extracting information from receipts and invoices using OpenAI's GPT-4o model and the Instructor Library for structured extraction and data validation with Pydantic V2.
+
+The app is finished up till this point. Do not try to create it as it is already here.
+
+Considerations:
+
+An important concept of the app is Pydantic Field Validation.
+
+##example
+
+One of the benefits of having Pydantic is the ease with which we can define validators. We cover this topic in many articles, like Reasking Validation and in our blog post Good LLM validation is just good validation.
+
+This post will mostly describe how to use simple and more complex retry and logic.
+
+Example of a Validator¶
+Before we begin, we'll use a simple example of a validator. One that checks that the name is in all caps. While we could obviously prompt that we want the name in all caps, this serves as an example of how we can build in additional logic without changing our prompts.
+
+from typing import Annotated
+from pydantic import AfterValidator, BaseModel
+
+
+def uppercase_validator(v):
+    if v.islower():
+        raise ValueError("Name must be ALL CAPS")
+    return v
+
+
+class UserDetail(BaseModel):
+    name: Annotated[str, AfterValidator(uppercase_validator)]
+    age: int
+
+
+try:
+    UserDetail(name="jason", age=12)
+except Exception as e:
+    print(e)
+    """
+    1 validation error for UserDetail
+    name
+      Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+    """
+
+Simple: Max Retries¶
+The simplest way to set up retries is to assign an integer value to max_retries.
+
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract `jason is 12`"},
+    ],
+    max_retries=3,  
+)
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 12
+}
+"""
+
+Further improvements.
+
+STEP-1:
+
+Instead of only txt files, add pdf support. We will need to use an API to extract the text from the pdf named "LLMWhisperer".
+
+API Endpoints
+Endpoint	Description
+/whisper	Convert your PDF documents, scanned documents, scanned images, Office documents and spreadsheets to text format which can be used by LLMs or other downstream applications.
+/whisper-status	Get the status of the conversion process. This can be used to check the status of the conversion process when the conversion is done.
+/whisper-retrieve	Retrieve the converted text of the document.
+/get-usage-info	Get usage metrics for your account.
+/whisper-manage-callback	Register webhooks (callbacks) which can be called after a conversion finishes
+Base URL
+The base URL for the APIs is https://llmwhisperer-api.us-central.unstract.com/api/v2
+
+
+[Skip to main content](#__docusaurus_skipToContent_fallback)
+
+Version: 2.0.0
+
+On this page
+
+Convert your PDF/Scanned documents to text format which can be used by LLMs
+
+|  |  |
+| --- | --- |
+| Endpoint | `/whisper` |
+| URL | `https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper` |
+| Method | `POST` |
+| Headers | `unstract-key: <YOUR API KEY>` |
+| Body | `application/octet-stream` |
+
+## Parameters [​](\#parameters "Direct link to Parameters")
+
+| Parameter | Type | Default | Required | Description |
+| --- | --- | --- | --- | --- |
+| mode | string | `form` | No | The processing mode to be used. Refer to the [modes](/llmwhisperer/llm_whisperer/apis/llm_whisperer_text_extraction_api/#modes) section for more information. |
+| output\_mode | string | `layout_preserving` | No | `layout_preserving` or `text` [output mode](/llmwhisperer/llm_whisperer/apis/llm_whisperer_text_extraction_api/#output-modes) |
+| page\_seperator | string | `<<<` | No | The string to be used as a page separator. |
+| pages\_to\_extract | string |  | No | Define which pages to extract. By default all pages are extracted. You can specify which pages to extract with this parameter. Example `1-5,7,21-` will extract pages 1,2,3,4,5,7,21,22,23,24... till the last page. |
+| median\_filter\_size | integer | `0` | No | The size of the median filter to be applied to the image. This is used to remove noise from the image. _This parameter works only in the `low_cost` mode_ |
+| gaussian\_blur\_radius | integer | `0` | No | The radius of the gaussian blur to be applied to the image. This is used to remove noise from the image. _This parameter works only in the `low_cost` mode_ |
+| line\_splitter\_tolerance | float | `0.4` | No | Factor to decide when to move text to the next line when it is above or below the baseline. The default value of `0.4` signifies 40% of the average character height |
+| line\_splitter\_strategy | string | `left-priority` | No | The line splitter strategy to use. An advanced option for customizing the line splitting process. Refer to the documentation below |
+| horizontal\_stretch\_factor | float | `1.0` | No | Factor by which a horizontal stretch has to applied. It defaults to `1.0`. A stretch factor of `1.1` would mean at 10% stretch factor applied. Normally this factor need not be adjusted. You might want to use this parameter when multi column layouts back into each other. For example in a two column layout, the two columns get merged into one. |
+| url\_in\_post | boolean | `false` | No | If set to `true` send the URL to download from - in the post body. See example below |
+| url _(deprecated, use url\_in\_post instead)_ | string |  | No | The default behaviour of the API is to process the document sent in the request body. If you want to process a document from a URL, you can provide the URL here. The URL should be accessible without any authentication. If the request body is empty, the API will try to process the document from the URL. |
+| mark\_vertical\_lines | boolean | `false` | No | Whether to reproduce vertical lines in the document. Note: This parameter is not applicable if mode=native\_text. |
+| mark\_horizontal\_lines | boolean | `false` | No | Whether to reproduce horizontal lines in the document. Note: This parameter is not applicable if mode=native\_text and will not work if mark\_vertical\_lines is set to false. |
+| lang | string | `eng` | No | The language hint to OCR. Currently auto detected. _This parameter is ingnored in the version._ |
+| tag | string | `default` | No | Auditing feature. Set a value which will be associated with the invocation of the API. This can be used for cross referencing in usage reports |
+| file\_name | string |  | No | Auditing feature. Set a value which will be associated with the invocation of the API. This can be used for cross referencing in usage reports |
+| use\_webhook | string |  | No | The webhook's name which will should be called after the conversion is complete. The name should have been registered earlier using the webhooks management endpoint |
+| webhook\_metadata | string |  | No | Any metadata which should be sent to the webhook. This data is sent verbatim to the callback endpoint. Refer to webhooks documentation. |
+
+### Modes [​](\#modes "Direct link to Modes")
+
+Refer to detailed comparison of modes [here](/llmwhisperer/llm_whisperer/llm_whisperer_modes/).
+
+Use **`native_text`** only when dealing with the following types of documents:
+
+- Documents which contain proper text. Typically, documents generated by software like MS Word, Google Docs, etc. fall into this category.
+- Software-generated PDFs like invoices, receipts, etc.
+
+> Text mode is very fast compared to OCR mode. It is recommended to use text mode when dealing with documents that contain native text (not scanned pages).
+
+### Output Modes [​](\#output-modes "Direct link to Output Modes")
+
+**Layout preserving ( `layout_preserving`)** mode tries to extract the text from the document as is, maintaining the structural layout of the document. This works very well for LLM consumption. This mode uses many techniques to provide the text in the best possible way for LLMs. It also removes white spaces and other unwanted characters from the text to make the result more cost-effective for LLMs.
+
+**Text ( `text`)** mode extracts the text from the document without applying any processing or intelligence. This mode is useful when the `layout_preserving` mode is not able to extract the text properly. This can happen if the document contains too many different fonts and font sizes.
+
+## Request Body [​](\#request-body "Direct link to Request Body")
+
+The request body should contain the PDF/Scanned document that needs to be converted to text. The document should be in `application/octet-stream` format.
+
+If you are using the `url_in_post` parameter, the URL should be sent in the request body. Content-Type should be `text/plain`. See curl example below.
+
+## Example Curl Requests [​](\#example-curl-requests "Direct link to Example Curl Requests")
+
+### Upload document [​](\#upload-document "Direct link to Upload document")
+
+```codeBlockLines_e6Vv
+curl -X POST --location 'https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper?mode=form&output_mode=layout_preserving' \
+-H 'Content-Type: application/octet-stream' \
+-H 'unstract-key: <Your API Key>' \
+--data-binary '@your-file-to-process.pdf'
+
+```
+
+### Process document from URL [​](\#process-document-from-url "Direct link to Process document from URL")
+
+```codeBlockLines_e6Vv
+curl -X POST --location 'https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper?mode=form&output_mode=layout_preserving&url_in_post=true' \
+-H 'Content-Type: text/plain' \
+-H 'unstract-key: <Your API Key>' \
+--data 'https://your-url-to-process.pdf'
+
+```
+
+> To include the headers in the response use `curl -i` in the request.
+
+## Response [​](\#response "Direct link to Response")
+
+A successful request will return a `202` status code with a JSON response containing the `whisper_hash` which can be used to check the status of the conversion process.
+
+The typical workflow is to call the `/whisper` API to convert your document to text format. Check the status of the conversion process by calling the `/whisper-status` API. Repeat this step until the status is `processed`. Once the conversion is done, retrieve the converted text by calling the `/whisper-retrieve` API. Another wokrflow is to use the webhooks to get the converted text. Refer to the documentation for more information.
+
+| HTTP Status | Content-Type | Headers | Description |
+| --- | --- | --- | --- |
+| 202 | `application/json` |  | The API will return a JSON with `whisper_hash` which can be used with the status API to get status and later retrieve the extracted text. Refer below for JSON format |
+
+### Example `202` Response [​](\#example-202-response "Direct link to example-202-response")
+
+```codeBlockLines_e6Vv
+{
+  "message": "Whisper Job Accepted",
+  "status": "processing",
+  "whisper_hash": "xxxxxa96|xxxxxxxxxxxxxxxxxxx4ed3da759ef670f"
+}
+
+```
+
+- [Parameters](#parameters)
+  - [Modes](#modes)
+  - [Output Modes](#output-modes)
+- [Request Body](#request-body)
+- [Example Curl Requests](#example-curl-requests)
+  - [Upload document](#upload-document)
+  - [Process document from URL](#process-document-from-url)
+- [Response](#response)
+  - [Example `202` Response](#example-202-response)

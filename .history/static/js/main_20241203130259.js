@@ -156,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('.processing-indicator').classList.remove('hidden');
             document.querySelector('.upload-content').classList.add('hidden');
 
-            fetch('/extract', {
+            fetch('/upload', {
                 method: 'POST',
                 body: formData
             })
@@ -173,28 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Show results
                 document.querySelector('.results').classList.remove('hidden');
-                
-                // Convert and display markdown with tables
-                const markdown = convertToMarkdown(data);
-                document.querySelector('.markdown-content').innerHTML = marked.parse(markdown, {
-                    gfm: true,
-                    breaks: true,
-                    tables: true
-                });
-
-                // Format and display JSON
-                document.querySelector('.json-content').textContent = formatJsonForDisplay(data);
-
-                // Add visible class for animation
-                setTimeout(() => {
-                    document.querySelector('.results').classList.add('visible');
-                    document.querySelectorAll('.result-section').forEach(section => {
-                        section.classList.add('visible');
-                    });
-                }, 100);
+                document.querySelector('.markdown-content').textContent = data.markdown;
+                document.querySelector('.json-content').textContent = JSON.stringify(data.json, null, 2);
             })
             .catch(error => {
                 console.error('Error:', error);
+                // Hide processing indicator and show error message
                 document.querySelector('.processing-indicator').classList.add('hidden');
                 document.querySelector('.upload-content').classList.remove('hidden');
                 alert('An error occurred while processing the file.');
@@ -202,120 +186,6 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             alert('Please upload a PDF file.');
         }
-    }
-
-    function formatCurrency(amount, currency = 'EUR') {
-        if (!amount) return '';
-        const num = parseFloat(amount);
-        return `${currency} ${num.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    }
-
-    function convertToMarkdown(data) {
-        let markdown = `# Invoice Details\n\n`;
-        markdown += '<div class="details-grid">\n\n';
-
-        // Left Column: General and Supplier Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // General Information
-        markdown += `## General Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        markdown += `| Invoice Number | ${data.invoice_number} |\n`;
-        markdown += `| Date | ${data.invoice_date} |\n`;
-        if (data.due_date) markdown += `| Due Date | ${data.due_date} |\n`;
-        markdown += `| Amount Payable | ${formatCurrency(data.amount_payable)} |\n\n`;
-
-        // Supplier Information
-        markdown += `## Supplier Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        markdown += `| Name | ${data.primary_supplier} |\n`;
-        if (data.details_supplier) {
-            const supplier = data.details_supplier;
-            if (supplier.email) markdown += `| Email | \`${supplier.email}\` |\n`;
-            if (supplier.address) markdown += `| Address | ${supplier.address} |\n`;
-            if (supplier.iban) markdown += `| IBAN | \`${supplier.iban}\` |\n`;
-            if (supplier.vat_id) markdown += `| VAT ID | \`${supplier.vat_id}\` |\n`;
-            if (supplier.kvk) markdown += `| KVK | ${supplier.kvk} |\n`;
-        }
-        markdown += '\n</div>\n\n';
-
-        // Right Column: Financial Details and Payment Information
-        markdown += '<div class="details-section">\n\n';
-        
-        // Financial Details
-        markdown += `## Financial Details\n\n`;
-        markdown += `| Category | Amount |\n`;
-        markdown += `|----------|--------|\n`;
-        if (data.suppliers && data.suppliers.length > 0) {
-            const supplier = data.suppliers[0];  // Assuming first supplier
-            if (supplier.high_tax_base) markdown += `| High Tax Base (21%) | ${formatCurrency(supplier.high_tax_base)} |\n`;
-            if (supplier.high_tax) markdown += `| High Tax Amount | ${formatCurrency(supplier.high_tax)} |\n`;
-            if (supplier.low_tax_base) markdown += `| Low Tax Base (9%) | ${formatCurrency(supplier.low_tax_base)} |\n`;
-            if (supplier.low_tax) markdown += `| Low Tax Amount | ${formatCurrency(supplier.low_tax)} |\n`;
-            if (supplier.null_tax_base) markdown += `| Null Tax Base (0%) | ${formatCurrency(supplier.null_tax_base)} |\n`;
-            if (supplier.amount_excl_tax) markdown += `| Amount Excluding Tax | ${formatCurrency(supplier.amount_excl_tax)} |\n`;
-        }
-        if (data.total_emballage) markdown += `| Total Emballage | ${formatCurrency(data.total_emballage)} |\n`;
-        markdown += `| **Total Amount Payable** | **${formatCurrency(data.amount_payable)}** |\n\n`;
-
-        // Payment Information
-        markdown += `## Payment Information\n\n`;
-        markdown += `| Field | Value |\n`;
-        markdown += `|-------|-------|\n`;
-        if (data.method_of_payment) markdown += `| Payment Method | ${data.method_of_payment} |\n`;
-        if (data.recipient) markdown += `| Recipient | ${data.recipient} |\n`;
-        
-        markdown += '\n</div>\n\n';
-        markdown += '</div>\n\n';  // Close details-grid
-
-        // Error handling section if there are errors (full width, below the grid)
-        if (data.error_handling?.has_errors) {
-            markdown += `## ⚠️ Validation Errors\n\n`;
-            if (data.error_handling.errors?.length > 0) {
-                data.error_handling.errors.forEach(error => {
-                    markdown += `### Error ${error.id}\n`;
-                    markdown += `**Message:** ${error.message}\n\n`;
-                    markdown += `**Analysis:** ${error.analysis}\n\n`;
-                });
-            }
-        }
-
-        return markdown;
-    }
-
-    function formatJsonForDisplay(data) {
-        // Deep clone the data to avoid modifying the original
-        const formattedData = JSON.parse(JSON.stringify(data));
-        
-        // Format currency values
-        function formatCurrencyInObject(obj) {
-            for (let key in obj) {
-                if (typeof obj[key] === 'object' && obj[key] !== null) {
-                    formatCurrencyInObject(obj[key]);
-                } else if (
-                    typeof obj[key] === 'string' && 
-                    !isNaN(obj[key]) && 
-                    (
-                        key.includes('amount') ||
-                        key.includes('tax') ||
-                        key.includes('base') ||
-                        key.includes('emballage')
-                    )
-                ) {
-                    obj[key] = parseFloat(obj[key]).toLocaleString('nl-NL', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    });
-                }
-            }
-        }
-        
-        formatCurrencyInObject(formattedData);
-        
-        // Return formatted JSON string with proper indentation
-        return JSON.stringify(formattedData, null, 2);
     }
 
     // Copy button functionality

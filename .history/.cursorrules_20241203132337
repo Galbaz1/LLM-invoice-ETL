@@ -76,6 +76,6 @@ Further improvements.
 
 STEP-1:
 
-If the user uploads a pdf file we want to show a preview of that file to the right side of the screen. The preview is fully responsive and multipage can be navigated with proffesionally styled arrows at the bottom. The preview is located below the sleek drag and drop area that is centred at the top of the screen. Left of the preview is where the results will be rendered in a scrollable block. 
+If the user uploads a pdf file we want to show a preview of that file to the right side of the screen. The preview is fully responsive  and multipage can be navigated with proffesionally styled arrows at the bottom. The preview is located below the sleek drag and drop area that is centred at the top of the screen. Left of the preview is where the results will be rendered in a scrollable block. 
 
 

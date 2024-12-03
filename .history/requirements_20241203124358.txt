@@ -3,6 +3,8 @@ uvicorn
 python-multipart
 openai
 instructor
+langsmith
 pydantic
+jinja2
 termcolor
-aiosqlite
+llmwhisperer-client

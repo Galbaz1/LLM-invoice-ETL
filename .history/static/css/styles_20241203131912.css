@@ -55,8 +55,6 @@ body {
     border-radius: 6px;
     padding: 1rem;
     margin-bottom: 1rem;
-    height: auto;
-    overflow: auto;
 }
 
 .result-section h2 {
@@ -65,11 +63,6 @@ body {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     opacity: 0.7;
-    position: sticky;
-    top: 0;
-    background: inherit;
-    padding: 0.5rem 0;
-    z-index: 1;
 }
 
 /* Right Panel - Upload and Preview */
@@ -115,7 +108,6 @@ body {
     border-radius: 8px;
     padding: 0.75rem;
     min-height: 0;
-    overflow: hidden;
 }
 
 .preview-container {
@@ -123,12 +115,12 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 #pdfCanvas {
-    width: 100%;
+    flex: 1;
+    max-width: 100%;
     height: auto;
     object-fit: contain;
     background: white;
@@ -141,12 +133,6 @@ body {
     justify-content: center;
     gap: 1rem;
     padding: 0.5rem 0 0;
-    position: sticky;
-    bottom: 0;
-    background: rgba(26, 26, 26, 0.9);
-    backdrop-filter: blur(10px);
-    margin-top: auto;
-    border-radius: 4px;
 }
 
 .page-btn {
@@ -186,11 +172,6 @@ body {
     display: flex;
     gap: 0.5rem;
     margin-top: 0.75rem;
-    position: sticky;
-    bottom: 0;
-    background: inherit;
-    padding: 0.5rem 0;
-    z-index: 1;
 }
 
 .copy-btn, .download-btn {
@@ -235,19 +216,6 @@ body {
     color: white;
     line-height: 1.5;
     font-size: 0.9rem;
-    white-space: pre-wrap;
-    word-break: break-word;
-    height: auto;
-    min-height: 100%;
-}
-
-.markdown-content code {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-    font-size: 0.85em;
-    color: #fff;
 }
 
 .json-content {
@@ -255,96 +223,6 @@ body {
     font-size: 0.85rem;
     white-space: pre-wrap;
     word-break: break-word;
-}
-
-/* Markdown Table Styling */
-.markdown-content table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    margin: 1rem 0;
-    font-size: 0.9rem;
-}
-
-.markdown-content th {
-    text-align: left;
-    padding: 0.5rem;
-    background: rgba(255, 255, 255, 0.1);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.markdown-content td {
-    padding: 0.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.markdown-content tr:hover td {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-/* Two Column Layout */
-.markdown-content .details-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    margin: 1rem 0;
-}
-
-.markdown-content .details-section {
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: 6px;
-    padding: 1rem;
-}
-
-.markdown-content .details-section h2 {
-    margin: 0 0 1rem 0;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    opacity: 0.7;
-}
-
-.markdown-content .details-section table {
-    margin: 0;
-}
-
-/* Responsive Grid */
-@media (max-width: 768px) {
-    .markdown-content .details-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-}
-
-/* Scrollbar Styling */
-.preview-container::-webkit-scrollbar,
-.results::-webkit-scrollbar,
-.result-section::-webkit-scrollbar {
-    width: 8px;
-}
-
-.preview-container::-webkit-scrollbar-track,
-.results::-webkit-scrollbar-track,
-.result-section::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-}
-
-.preview-container::-webkit-scrollbar-thumb,
-.results::-webkit-scrollbar-thumb,
-.result-section::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-.preview-container::-webkit-scrollbar-thumb:hover,
-.results::-webkit-scrollbar-thumb:hover,
-.result-section::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
 }
 
 /* Utility Classes */

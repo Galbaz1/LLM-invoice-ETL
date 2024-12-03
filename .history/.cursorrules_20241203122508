@@ -1,0 +1,442 @@
+This application provides a beautiful, animated web interface for extracting information from receipts and invoices using OpenAI's GPT-4o model and the Instructor Library for structured extraction and data validation with Pydantic V2.
+
+The app is finished up till this point. Do not try to create it as it is already here.
+
+Considerations:
+
+An important concept of the app is Pydantic Field Validation.
+
+##example
+
+One of the benefits of having Pydantic is the ease with which we can define validators. We cover this topic in many articles, like Reasking Validation and in our blog post Good LLM validation is just good validation.
+
+This post will mostly describe how to use simple and more complex retry and logic.
+
+Example of a Validator¶
+Before we begin, we'll use a simple example of a validator. One that checks that the name is in all caps. While we could obviously prompt that we want the name in all caps, this serves as an example of how we can build in additional logic without changing our prompts.
+
+from typing import Annotated
+from pydantic import AfterValidator, BaseModel
+
+
+def uppercase_validator(v):
+    if v.islower():
+        raise ValueError("Name must be ALL CAPS")
+    return v
+
+
+class UserDetail(BaseModel):
+    name: Annotated[str, AfterValidator(uppercase_validator)]
+    age: int
+
+
+try:
+    UserDetail(name="jason", age=12)
+except Exception as e:
+    print(e)
+    """
+    1 validation error for UserDetail
+    name
+      Value error, Name must be ALL CAPS [type=value_error, input_value='jason', input_type=str]
+        For further information visit https://errors.pydantic.dev/2.9/v/value_error
+    """
+
+Simple: Max Retries¶
+The simplest way to set up retries is to assign an integer value to max_retries.
+
+import openai
+import instructor
+from pydantic import BaseModel
+
+
+class UserDetail(BaseModel):
+    name: str
+    age: int
+
+
+client = instructor.from_openai(openai.OpenAI(), mode=instructor.Mode.TOOLS)
+
+response = client.chat.completions.create(
+    model="gpt-4o",
+    response_model=UserDetail,
+    messages=[
+        {"role": "user", "content": "Extract `jason is 12`"},
+    ],
+    max_retries=3,  
+)
+print(response.model_dump_json(indent=2))
+"""
+{
+  "name": "jason",
+  "age": 12
+}
+"""
+
+Further improvements.
+
+STEP-1:
+
+Instead of only txt files, add pdf support. We will need to use an API to extract the text from the pdf named "LLMWhisperer".
+
+API Endpoints
+Endpoint	Description
+/whisper	Convert your PDF documents, scanned documents, scanned images, Office documents and spreadsheets to text format which can be used by LLMs or other downstream applications.
+/whisper-status	Get the status of the conversion process. This can be used to check the status of the conversion process when the conversion is done.
+/whisper-retrieve	Retrieve the converted text of the document.
+/get-usage-info	Get usage metrics for your account.
+/whisper-manage-callback	Register webhooks (callbacks) which can be called after a conversion finishes
+Base URL
+The base URL for the APIs is https://llmwhisperer-api.us-central.unstract.com/api/v2
+
+
+[Skip to main content](#__docusaurus_skipToContent_fallback)
+
+Version: 2.0.0
+
+On this page
+
+Convert your PDF/Scanned documents to text format which can be used by LLMs
+
+|  |  |
+| --- | --- |
+| Endpoint | `/whisper` |
+| URL | `https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper` |
+| Method | `POST` |
+| Headers | `unstract-key: <YOUR API KEY>` |
+| Body | `application/octet-stream` |
+
+## Parameters [​](\#parameters "Direct link to Parameters")
+
+| Parameter | Type | Default | Required | Description |
+| --- | --- | --- | --- | --- |
+| mode | string | `form` | No | The processing mode to be used. Refer to the [modes](/llmwhisperer/llm_whisperer/apis/llm_whisperer_text_extraction_api/#modes) section for more information. |
+| output\_mode | string | `layout_preserving` | No | `layout_preserving` or `text` [output mode](/llmwhisperer/llm_whisperer/apis/llm_whisperer_text_extraction_api/#output-modes) |
+| page\_seperator | string | `<<<` | No | The string to be used as a page separator. |
+| pages\_to\_extract | string |  | No | Define which pages to extract. By default all pages are extracted. You can specify which pages to extract with this parameter. Example `1-5,7,21-` will extract pages 1,2,3,4,5,7,21,22,23,24... till the last page. |
+| median\_filter\_size | integer | `0` | No | The size of the median filter to be applied to the image. This is used to remove noise from the image. _This parameter works only in the `low_cost` mode_ |
+| gaussian\_blur\_radius | integer | `0` | No | The radius of the gaussian blur to be applied to the image. This is used to remove noise from the image. _This parameter works only in the `low_cost` mode_ |
+| line\_splitter\_tolerance | float | `0.4` | No | Factor to decide when to move text to the next line when it is above or below the baseline. The default value of `0.4` signifies 40% of the average character height |
+| line\_splitter\_strategy | string | `left-priority` | No | The line splitter strategy to use. An advanced option for customizing the line splitting process. Refer to the documentation below |
+| horizontal\_stretch\_factor | float | `1.0` | No | Factor by which a horizontal stretch has to applied. It defaults to `1.0`. A stretch factor of `1.1` would mean at 10% stretch factor applied. Normally this factor need not be adjusted. You might want to use this parameter when multi column layouts back into each other. For example in a two column layout, the two columns get merged into one. |
+| url\_in\_post | boolean | `false` | No | If set to `true` send the URL to download from - in the post body. See example below |
+| url _(deprecated, use url\_in\_post instead)_ | string |  | No | The default behaviour of the API is to process the document sent in the request body. If you want to process a document from a URL, you can provide the URL here. The URL should be accessible without any authentication. If the request body is empty, the API will try to process the document from the URL. |
+| mark\_vertical\_lines | boolean | `false` | No | Whether to reproduce vertical lines in the document. Note: This parameter is not applicable if mode=native\_text. |
+| mark\_horizontal\_lines | boolean | `false` | No | Whether to reproduce horizontal lines in the document. Note: This parameter is not applicable if mode=native\_text and will not work if mark\_vertical\_lines is set to false. |
+| lang | string | `eng` | No | The language hint to OCR. Currently auto detected. _This parameter is ingnored in the version._ |
+| tag | string | `default` | No | Auditing feature. Set a value which will be associated with the invocation of the API. This can be used for cross referencing in usage reports |
+| file\_name | string |  | No | Auditing feature. Set a value which will be associated with the invocation of the API. This can be used for cross referencing in usage reports |
+| use\_webhook | string |  | No | The webhook's name which will should be called after the conversion is complete. The name should have been registered earlier using the webhooks management endpoint |
+| webhook\_metadata | string |  | No | Any metadata which should be sent to the webhook. This data is sent verbatim to the callback endpoint. Refer to webhooks documentation. |
+
+### Modes [​](\#modes "Direct link to Modes")
+
+Refer to detailed comparison of modes [here](/llmwhisperer/llm_whisperer/llm_whisperer_modes/).
+
+Use **`native_text`** only when dealing with the following types of documents:
+
+- Documents which contain proper text. Typically, documents generated by software like MS Word, Google Docs, etc. fall into this category.
+- Software-generated PDFs like invoices, receipts, etc.
+
+> Text mode is very fast compared to OCR mode. It is recommended to use text mode when dealing with documents that contain native text (not scanned pages).
+
+### Output Modes [​](\#output-modes "Direct link to Output Modes")
+
+**Layout preserving ( `layout_preserving`)** mode tries to extract the text from the document as is, maintaining the structural layout of the document. This works very well for LLM consumption. This mode uses many techniques to provide the text in the best possible way for LLMs. It also removes white spaces and other unwanted characters from the text to make the result more cost-effective for LLMs.
+
+**Text ( `text`)** mode extracts the text from the document without applying any processing or intelligence. This mode is useful when the `layout_preserving` mode is not able to extract the text properly. This can happen if the document contains too many different fonts and font sizes.
+
+## Request Body [​](\#request-body "Direct link to Request Body")
+
+The request body should contain the PDF/Scanned document that needs to be converted to text. The document should be in `application/octet-stream` format.
+
+If you are using the `url_in_post` parameter, the URL should be sent in the request body. Content-Type should be `text/plain`. See curl example below.
+
+## Example Curl Requests [​](\#example-curl-requests "Direct link to Example Curl Requests")
+
+### Upload document [​](\#upload-document "Direct link to Upload document")
+
+```codeBlockLines_e6Vv
+curl -X POST --location 'https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper?mode=form&output_mode=layout_preserving' \
+-H 'Content-Type: application/octet-stream' \
+-H 'unstract-key: <Your API Key>' \
+--data-binary '@your-file-to-process.pdf'
+
+```
+
+### Process document from URL [​](\#process-document-from-url "Direct link to Process document from URL")
+
+```codeBlockLines_e6Vv
+curl -X POST --location 'https://llmwhisperer-api.us-central.unstract.com/api/v2/whisper?mode=form&output_mode=layout_preserving&url_in_post=true' \
+-H 'Content-Type: text/plain' \
+-H 'unstract-key: <Your API Key>' \
+--data 'https://your-url-to-process.pdf'
+
+```
+
+> To include the headers in the response use `curl -i` in the request.
+
+## Response [​](\#response "Direct link to Response")
+
+A successful request will return a `202` status code with a JSON response containing the `whisper_hash` which can be used to check the status of the conversion process.
+
+The typical workflow is to call the `/whisper` API to convert your document to text format. Check the status of the conversion process by calling the `/whisper-status` API. Repeat this step until the status is `processed`. Once the conversion is done, retrieve the converted text by calling the `/whisper-retrieve` API. Another wokrflow is to use the webhooks to get the converted text. Refer to the documentation for more information.
+
+| HTTP Status | Content-Type | Headers | Description |
+| --- | --- | --- | --- |
+| 202 | `application/json` |  | The API will return a JSON with `whisper_hash` which can be used with the status API to get status and later retrieve the extracted text. Refer below for JSON format |
+
+### Example `202` Response [​](\#example-202-response "Direct link to example-202-response")
+
+```codeBlockLines_e6Vv
+{
+  "message": "Whisper Job Accepted",
+  "status": "processing",
+  "whisper_hash": "xxxxxa96|xxxxxxxxxxxxxxxxxxx4ed3da759ef670f"
+}
+
+```
+
+- [Parameters](#parameters)
+  - [Modes](#modes)
+  - [Output Modes](#output-modes)
+- [Request Body](#request-body)
+- [Example Curl Requests](#example-curl-requests)
+  - [Upload document](#upload-document)
+  - [Process document from URL](#process-document-from-url)
+- [Response](#response)
+  - [Example `202` Response](#example-202-response)
+  
+  [Skip to main content](#__docusaurus_skipToContent_fallback)
+
+Version: 2.0.0
+
+On this page
+
+note
+
+This documentation is for the V2 version of the LLMWhisperer API. The corresponding Python client version is `2.x.y`. V1 and V2 are not backward compatible.
+
+This Python client provides a simple and efficient way to interact with the LLMWhisperer API. LLMWhisperer is a technology that presents data from complex documents (different designs and formats) to LLMs in a way that they can best understand.
+
+## Features [​](\#features "Direct link to Features")
+
+- Easy to use Pythonic interface.
+- Handles all the HTTP requests and responses for you.
+- Raises Python exceptions for API errors.
+
+## Installation [​](\#installation "Direct link to Installation")
+
+You can install the LLMWhisperer Python Client using pip:
+
+```codeBlockLines_e6Vv
+pip install llmwhisperer-client
+
+```
+
+## Environment Variables [​](\#environment-variables "Direct link to Environment Variables")
+
+| Variable | Description |
+| --- | --- |
+| LLMWHISPERER\_BASE\_URL\_V2 | The base URL of the API. When left undefined, default `https://llmwhisperer-api.us-central.unstract.com/api/v2` is used |
+| LLMWHISPERER\_API\_KEY | The API key to use for authenticating requests to the API. |
+| LLMWHISPERER\_LOGGING\_LEVEL | The logging level to use. Possible values are `ERROR`, `WARN`, `INFO`, `DEBUG` |
+
+All environment variables are optional. If `LLMWHISPERER_API_KEY` is not set, you must provide the API key when creating a new client. The environment variables can be overridden by providing the values in the client constructor.
+
+## Usage [​](\#usage "Direct link to Usage")
+
+First, import the `LLMWhispererClientV2` from the `client` module:
+
+```codeBlockLines_e6Vv
+from unstract.llmwhisperer import LLMWhispererClientV2
+
+```
+
+Then, create an instance of the `LLMWhispererClientV2`:
+
+```codeBlockLines_e6Vv
+# All parameters are optional when environment variables are set
+client = LLMWhispererClientV2()
+
+```
+
+or
+
+```codeBlockLines_e6Vv
+# Provide the base URL and API key explicitly
+client = LLMWhispererClientV2(base_url="https://llmwhisperer-api.us-central.unstract.com/api/v2", api_key="your_api_key")
+
+```
+
+Now, you can use the client to interact with the LLMWhisperer API:
+
+```codeBlockLines_e6Vv
+# Get usage info
+usage_info = client.get_usage_info()
+
+# Process a document in async mode
+# The client will return with a whisper hash which can be used to check the status and retrieve the result
+whisper = client.whisper(file_path="path_to_your_file")
+
+# Get the status of a whisper operation
+# whisper_hash is available in the 'whisper_hash' field of the result of the whisper operation
+status = client.whisper_status(whisper_hash)
+
+# Retrieve the result of a whisper operation
+# whisper_hash is available in the 'whisper_hash' field of the result of the whisper operation
+whisper = client.whisper_retrieve(whisper_hash)
+
+# Or, call the whisper method in sync mode
+# The client will wait for the extraction to complete and return the result
+whisper = client.whisper(
+    file_path="path_to_your_file",
+    wait_for_completion=True,
+    wait_timeout=200
+)
+
+```
+
+### Error Handling [​](\#error-handling "Direct link to Error Handling")
+
+The client raises `LLMWhispererClientException` for API errors:
+
+```codeBlockLines_e6Vv
+try:
+    result = client.whisper_retrieve("invalid_hash")
+except LLMWhispererClientException as e:
+    print(f"Error: {e.message}, Status Code: {e.status_code}")
+
+```
+
+### Typical usage [​](\#typical-usage "Direct link to Typical usage")
+
+Using the default async mode, the client will return with a whisper hash which can be used to check the status and retrieve the result.
+
+```codeBlockLines_e6Vv
+client = LLMWhispererClientV2()
+try:
+    result = client.whisper(
+        file_path="sample_files/credit_card.pdf",
+    )
+    if result["status_code"] == 202:
+        print("Whisper request accepted.")
+        print(f"Whisper hash: {result['whisper_hash']}")
+        while True:
+            print("Polling for whisper status...")
+            status = client.whisper_status(whisper_hash=result["whisper_hash"])
+            if status["status"] == "processing":
+                print("STATUS: processing...")
+            elif status["status"] == "delivered":
+                print("STATUS: Already delivered!")
+                break
+            elif status["status"] == "unknown":
+                print("STATUS: unknown...")
+                break
+            elif status["status"] == "processed":
+                print("STATUS: processed!")
+                print("Let's retrieve the result of the extraction...")
+                resultx = client.whisper_retrieve(
+                    whisper_hash=result["whisper_hash"]
+                )
+                # Refer to documentation for result format
+                print(resultx)
+                break
+            # Poll every 5 seconds
+            time.sleep(5)
+except LLMWhispererClientException as e:
+    print(e)
+
+```
+
+or, you can call the whisper method in sync mode, which is a helper implementation of the above code:
+
+```codeBlockLines_e6Vv
+client = LLMWhispererClientV2()
+try:
+    result = client.whisper(
+                file_path="sample_files/credit_card.pdf",
+                wait_for_completion=True,
+                wait_timeout=200,
+            )
+    print(result)
+except LLMWhispererClientException as e:
+    print(e)
+
+```
+
+## Highlighting data helper function [​](\#highlighting-data-helper-function "Direct link to Highlighting data helper function")
+
+Refer to [API documentation](/llmwhisperer/llm_whisperer/apis/llm_whisperer_text_extraction_retrieve_api/) for detailed information. The following is a helper function to conveniently get the box coordinates of the highlighted data.
+
+```codeBlockLines_e6Vv
+client = LLMWhispererClientV2()
+whisper = client.whisper(
+    file_path="path_to_your_file",
+    wait_for_completion=True,
+    wait_timout=200
+)
+ht_line = 10            # Line number to highlight
+target_width = 2480     # Target width of the image in UI
+target_height = 3508    # Target height of the image in UI
+page, x1, y1, x2, y2 = client.get_highlight_rect(
+    line_metadata = whisper["extraction"]["line_metadata"][ht_line],
+    line_no = ht_line,
+    target_width = target_width,
+    target_height = target_height
+)
+
+# Use the page, x1, y1, x2, y2 to highlight the line in the UI
+
+```
+
+## Result format [​](\#result-format "Direct link to Result format")
+
+### `whisper` [​](\#whisper "Direct link to whisper")
+
+The `whisper` method returns a dictionary
+
+#### For Asyn operation (default) [​](\#for-asyn-operation-default "Direct link to For Asyn operation (default)")
+
+```codeBlockLines_e6Vv
+{
+    "message": "Whisper Job Accepted",
+    "status": "processing",
+    "whisper_hash": "XXX37efd|XXXXXXXe92b30823c4ed3da759ef670f",
+    "status_code": 202,
+    "extraction": {}
+}
+
+```
+
+The `whisper_hash` can be used to check the status of the extraction and retrieve the result. `extraction` will be empty for async operations.
+
+#### For Sync operation [​](\#for-sync-operation "Direct link to For Sync operation")
+
+```codeBlockLines_e6Vv
+{
+    "message": "Whisper Job Accepted",
+    "status": "processed",
+    "whisper_hash": "XXX37efd|XXXXXXXe92b30823c4ed3da759ef670f",
+    "status_code": 200,
+    "extraction": {
+        "confidence_metadata" : [],
+        "line_metadata" : [],
+        "metadata" : {},
+        "result_text" : "<Extracted Text>",
+        "webhook_metadata" : ""
+    }
+}
+
+```
+
+Refer to the `whisper_retrieve` API for details on the result format.
+
+- [Features](#features)
+- [Installation](#installation)
+- [Environment Variables](#environment-variables)
+- [Usage](#usage)
+  - [Error Handling](#error-handling)
+  - [Typical usage](#typical-usage)
+- [Highlighting data helper function](#highlighting-data-helper-function)
+- [Result format](#result-format)
+  - [`whisper`](#whisper)

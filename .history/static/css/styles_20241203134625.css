@@ -319,39 +319,6 @@ body {
         gap: 1rem;
     }
 }
-
-/* Scrollbar Styling */
-.preview-container::-webkit-scrollbar,
-.results::-webkit-scrollbar,
-.result-section::-webkit-scrollbar {
-    width: 8px;
-}
-
-.preview-container::-webkit-scrollbar-track,
-.results::-webkit-scrollbar-track,
-.result-section::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 4px;
-}
-
-.preview-container::-webkit-scrollbar-thumb,
-.results::-webkit-scrollbar-thumb,
-.result-section::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-}
-
-.preview-container::-webkit-scrollbar-thumb:hover,
-.results::-webkit-scrollbar-thumb:hover,
-.result-section::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
     .container {
